@@ -1,0 +1,5 @@
+allowBuilds:
+  esbuild: true
+  workerd: true
+minimumReleaseAgeExclude:
+  - satoru-render@1.0.15

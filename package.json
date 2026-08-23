@@ -2,7 +2,7 @@
 	"name": "ogp-image-creator",
 	"version": "0.0.0",
 	"private": true,
-	"packageManager": "pnpm@10.33.0",
+	"packageManager": "pnpm@11.22.0",
 	"scripts": {
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev",
@@ -13,12 +13,6 @@
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
 		"cf-typegen": "wrangler types"
-	},
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"esbuild",
-			"workerd"
-		]
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.22.0",
@@ -32,10 +26,10 @@
 		"eslint-plugin-react-hooks": "7.1.1",
 		"eslint-plugin-react-refresh": "0.5.4",
 		"monaco-editor": "0.56.0",
-		"typescript": "^5.5.2",
+		"typescript": "6.0.3",
 		"typescript-eslint": "8.67.0",
 		"vite": "8.2.2",
-		"vitest": "~4.1.0",
+		"vitest": "~4.1.11",
 		"wrangler": "4.125.0"
 	},
 	"dependencies": {
@@ -43,7 +37,7 @@
 		"hono": "4.13.3",
 		"react": "19.2.8",
 		"react-dom": "19.2.8",
-		"satoru-render": "1.0.14"
+		"satoru-render": "1.0.15"
 	},
 	"main": "index.js",
 	"repository": "https://github.com/SoraKumo001/ogp-image-creator",
