@@ -40,11 +40,27 @@ function App() {
 	const [adminOpen, setAdminOpen] = useState(false);
 	const [apiDocsOpen, setApiDocsOpen] = useState(false);
 	const [toast, setToast] = useState<Toast | null>(null);
+	const [editorWidth, setEditorWidth] = useState<number | null>(null);
+	const [macroHeight, setMacroHeight] = useState<number | null>(null);
+	const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
+	const [isNarrow, setIsNarrow] = useState(false);
 
 	const { state, renderHtml } = useRenderer(settings);
 	const renderTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const workspaceRef = useRef<HTMLDivElement | null>(null);
+	const dragState = useRef<{ startX: number; startWidth: number } | null>(null);
+	const macroDragState = useRef<{ startY: number; startHeight: number } | null>(null);
 
 	const macroKeys = useMemo(() => extractMacroKeys(html), [html]);
+
+	// 狭い画面（縦積みレイアウト）かどうかを検出する
+	useEffect(() => {
+		const mq = window.matchMedia('(max-width: 960px)');
+		const update = () => setIsNarrow(mq.matches);
+		update();
+		mq.addEventListener('change', update);
+		return () => mq.removeEventListener('change', update);
+	}, []);
 
 	// 認証状態が「認証済み」以外に変わったら、開いているパネル等の UI 状態をリセットする。
 	// これによりログアウト→再ログイン時に前回のパネルが開いたまま残るのを防ぐ。
@@ -123,8 +139,7 @@ function App() {
 			setSettings((prev) => ({ ...prev, width: t.width || prev.width, height: t.height || prev.height }));
 			setCurrentId(t.id);
 			setTemplateName(t.name);
-			setSharedUrl(buildSharedUrl(t.id));
-			setify(`「${t.name}」を読み込みました`);
+			notify(`「${t.name}」を読み込みました`);
 		} catch (e) {
 			notify(e instanceof Error ? e.message : '読込に失敗しました', 'error');
 		}
@@ -160,6 +175,57 @@ function App() {
 		window.open(buildSharedUrl(currentId), '_blank', 'noopener,noreferrer');
 	}
 
+	// エディタペインの幅をドラッグで変更する
+	function handleResizeStart(e: React.PointerEvent<HTMLDivElement>) {
+		const workspace = workspaceRef.current;
+		if (!workspace) return;
+		const editorPane = workspace.querySelector<HTMLElement>('.editor-pane');
+		if (!editorPane) return;
+		dragState.current = { startX: e.clientX, startWidth: editorPane.getBoundingClientRect().width };
+		e.currentTarget.setPointerCapture(e.pointerId);
+	}
+
+	function handleResizeMove(e: React.PointerEvent<HTMLDivElement>) {
+		const drag = dragState.current;
+		const workspace = workspaceRef.current;
+		if (!drag || !workspace) return;
+		const delta = e.clientX - drag.startX;
+		const min = 320;
+		const max = workspace.getBoundingClientRect().width - 240;
+		const next = Math.max(min, Math.min(max, drag.startWidth + delta));
+		setEditorWidth(next);
+	}
+
+	function handleResizeEnd() {
+		dragState.current = null;
+	}
+
+	// パラメータパネルの高さをドラッグで変更する
+	function handleMacroResizeStart(e: React.PointerEvent<HTMLDivElement>) {
+		const editorPane = e.currentTarget.closest<HTMLElement>('.editor-pane');
+		if (!editorPane) return;
+		const macroPanel = editorPane.querySelector<HTMLElement>('.macro-panel');
+		if (!macroPanel) return;
+		macroDragState.current = { startY: e.clientY, startHeight: macroPanel.getBoundingClientRect().height };
+		e.currentTarget.setPointerCapture(e.pointerId);
+	}
+
+	function handleMacroResizeMove(e: React.PointerEvent<HTMLDivElement>) {
+		const drag = macroDragState.current;
+		const editorPane = e.currentTarget.closest<HTMLElement>('.editor-pane');
+		if (!drag || !editorPane) return;
+		const delta = drag.startY - e.clientY;
+		const paneHeight = editorPane.getBoundingClientRect().height;
+		const min = 60;
+		const max = paneHeight - 120;
+		const next = Math.max(min, Math.min(max, drag.startHeight + delta));
+		setMacroHeight(next);
+	}
+
+	function handleMacroResizeEnd() {
+		macroDragState.current = null;
+	}
+
 	if (phase === 'loading') {
 		return (
 			<div className="auth-screen">
@@ -192,26 +258,6 @@ function App() {
 				saving={saving}
 			/>
 
-			<div className="workspace">
-				<div className="pane editor-pane">
-					<div className="pane-label">
-						<span>HTML</span>
-						{currentId && <span className="saved-indicator">保存済み</span>}
-					</div>
-					<CodeEditor value={html} onChange={setHtml} />
-					<MacroPanel keys={macroKeys} params={params} onChange={handleParamChange} />
-				</div>
-
-				<PreviewPane
-					status={state.status}
-					imageUrl={state.imageUrl}
-					error={state.error}
-					width={settings.width}
-					height={settings.height}
-					format={settings.format}
-				/>
-			</div>
-
 			<div className="share-bar">
 				<div className="share-bar-inner">
 					<span className="share-label">OGP 画像 URL</span>
@@ -226,6 +272,85 @@ function App() {
 					<button type="button" className="btn ghost small" onClick={openUrl} disabled={!currentId}>
 						別タブで開く
 					</button>
+				</div>
+			</div>
+
+			<div className="workspace" ref={workspaceRef}>
+				{isNarrow && (
+					<div className="workspace-tabs" role="tablist">
+						<button
+							type="button"
+							role="tab"
+							aria-selected={activeTab === 'editor'}
+							className={`workspace-tab ${activeTab === 'editor' ? 'active' : ''}`}
+							onClick={() => setActiveTab('editor')}
+						>
+							HTML 編集
+						</button>
+						<button
+							type="button"
+							role="tab"
+							aria-selected={activeTab === 'preview'}
+							className={`workspace-tab ${activeTab === 'preview' ? 'active' : ''}`}
+							onClick={() => setActiveTab('preview')}
+						>
+							プレビュー
+						</button>
+					</div>
+				)}
+
+				<div
+					className="pane editor-pane"
+					style={editorWidth != null ? { flex: `0 0 ${editorWidth}px` } : undefined}
+					hidden={isNarrow && activeTab !== 'editor'}
+				>
+					<div className="pane-label">
+						<span>HTML</span>
+						{currentId && <span className="saved-indicator">保存済み</span>}
+					</div>
+					<div className="editor-wrap">
+						<CodeEditor value={html} onChange={setHtml} />
+					</div>
+					<div
+						className="macro-resize-handle"
+						onPointerDown={handleMacroResizeStart}
+						onPointerMove={handleMacroResizeMove}
+						onPointerUp={handleMacroResizeEnd}
+						onPointerCancel={handleMacroResizeEnd}
+						role="separator"
+						aria-orientation="horizontal"
+						aria-label="パラメータの高さを変更"
+					/>
+					<MacroPanel
+						keys={macroKeys}
+						params={params}
+						onChange={handleParamChange}
+						style={macroHeight != null ? { height: `${macroHeight}px`, flex: 'none', maxHeight: 'none' } : undefined}
+					/>
+				</div>
+
+				{!isNarrow && (
+					<div
+						className="resize-handle"
+						onPointerDown={handleResizeStart}
+						onPointerMove={handleResizeMove}
+						onPointerUp={handleResizeEnd}
+						onPointerCancel={handleResizeEnd}
+						role="separator"
+						aria-orientation="vertical"
+						aria-label="エディタの幅を変更"
+					/>
+				)}
+
+				<div className="preview-pane-wrap" hidden={isNarrow && activeTab !== 'preview'}>
+					<PreviewPane
+						status={state.status}
+						imageUrl={state.imageUrl}
+						error={state.error}
+						width={settings.width}
+						height={settings.height}
+						format={settings.format}
+					/>
 				</div>
 			</div>
 
