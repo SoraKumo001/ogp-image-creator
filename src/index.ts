@@ -77,6 +77,15 @@ async function renderImage(c: Context, html: string, width: number, height: numb
 
 const app = new Hono<AppEnv>();
 
+// セッション Cookie を生成する。`Secure` 属性は HTTPS 接続時のみ付与する。
+// ローカル開発（http://localhost）では Secure を付けるとブラウザが Cookie を
+// 保存せず、認証が成立しなくなるため、接続プロトコルに応じて切り替える。
+function sessionCookieHeader(c: Context, token: string, maxAge: number): string {
+	const secure = c.req.url.startsWith('https://');
+	const secureAttr = secure ? '; Secure' : '';
+	return `${SESSION_COOKIE}=${token}; HttpOnly; SameSite=Lax${secureAttr}; Path=/; Max-Age=${maxAge}`;
+}
+
 // 認証ミドルウェア: /api/templates* と /api/proxy を保護
 const requireAuth: MiddlewareHandler<AppEnv> = async (c, next) => {
 	const cookies = parseCookies(c.req.header('Cookie'));
@@ -165,7 +174,7 @@ app.post('/api/setup', async (c) => {
 	const passwordHash = await hashPassword(body.password);
 	await c.env['OGP-IMAGE-CREATOR'].put(adminKey(body.id), JSON.stringify({ passwordHash, createdAt: Date.now() }));
 	const token = await createSession(c.env, body.id);
-	c.header('Set-Cookie', `${SESSION_COOKIE}=${token}; HttpOnly; SameSite=Lax; Secure; Path=/; Max-Age=604800`);
+	c.header('Set-Cookie', sessionCookieHeader(c, token, 604800));
 	return c.json({ ok: true });
 });
 
@@ -184,7 +193,7 @@ app.post('/api/login', async (c) => {
 		return c.json({ error: 'invalid credentials' }, 401);
 	}
 	const token = await createSession(c.env, body.id);
-	c.header('Set-Cookie', `${SESSION_COOKIE}=${token}; HttpOnly; SameSite=Lax; Secure; Path=/; Max-Age=604800`);
+	c.header('Set-Cookie', sessionCookieHeader(c, token, 604800));
 	return c.json({ ok: true });
 });
 

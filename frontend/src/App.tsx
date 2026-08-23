@@ -62,7 +62,10 @@ function App() {
 	}, []);
 
 	// デバウンス付きライブレンダリング（HTML とマクロ値の両方に反応）
+	// 認証済みのときだけ実行する。未認証時に走ると /api/proxy が 401 になり
+	// フォント等の外部リソースが取得できず、認証後に再実行もされないため。
 	useEffect(() => {
+		if (phase !== 'authenticated') return;
 		if (renderTimer.current) clearTimeout(renderTimer.current);
 		renderTimer.current = setTimeout(() => {
 			void renderHtml(html, params);
@@ -70,7 +73,7 @@ function App() {
 		return () => {
 			if (renderTimer.current) clearTimeout(renderTimer.current);
 		};
-	}, [html, params, renderHtml]);
+	}, [html, params, renderHtml, phase]);
 
 	function handleParamChange(key: string, value: string) {
 		setParams((prev) => ({ ...prev, [key]: value }));
