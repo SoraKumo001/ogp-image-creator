@@ -168,3 +168,4 @@ dist
 
 # frontend build output
 public/
+.playwright-mcp

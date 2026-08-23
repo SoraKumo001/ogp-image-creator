@@ -92,6 +92,69 @@ body {
 	color: var(--accent-soft);
 }
 
+/* ---------- Document info (template name + save status) ---------- */
+
+.doc-status {
+	flex-shrink: 0;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+}
+
+.doc-status.unsaved {
+	background: var(--text-faint);
+}
+
+.doc-status.saved {
+	background: var(--accent-2);
+}
+
+.doc-status.dirty {
+	background: #f59e0b;
+}
+
+.doc-name {
+	max-width: 240px;
+	padding: 4px 8px;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: var(--radius-sm);
+	color: var(--text);
+	font-size: 14px;
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	cursor: pointer;
+	transition:
+		border-color 0.15s ease,
+		background 0.15s ease;
+}
+
+.doc-name:hover {
+	border-color: var(--border-strong);
+	background: var(--bg-elevated);
+}
+
+.doc-name-input {
+	width: 200px;
+	padding: 4px 8px;
+	background: var(--bg-elevated);
+	border: 1px solid var(--accent);
+	border-radius: var(--radius-sm);
+	color: var(--text);
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.doc-status-label {
+	flex-shrink: 0;
+	font-size: 11px;
+	font-weight: 600;
+	color: var(--text-faint);
+	white-space: nowrap;
+}
+
 .toolbar-controls {
 	display: flex;
 	align-items: center;
@@ -447,15 +510,68 @@ body {
 	flex-shrink: 0;
 }
 
-.saved-indicator {
-	padding: 2px 8px;
-	border-radius: 999px;
-	background: rgba(45, 212, 191, 0.14);
-	color: var(--accent-2);
-	font-size: 10.5px;
-	font-weight: 600;
-	letter-spacing: 0.04em;
+/* ---------- Editor header (HTML pane) ---------- */
+
+.editor-header {
+	height: 44px;
+	gap: 10px;
 	text-transform: none;
+	letter-spacing: normal;
+	flex-wrap: nowrap;
+}
+
+.editor-header .pane-title {
+	flex-shrink: 0;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--text-faint);
+}
+
+.editor-header .name-field {
+	flex-direction: row;
+	align-items: center;
+	gap: 8px;
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.editor-header .name-field-row {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.editor-header .doc-name {
+	max-width: 100%;
+	font-size: 13px;
+}
+
+.editor-header .doc-name-input {
+	width: 100%;
+	max-width: 220px;
+	font-size: 13px;
+}
+
+.editor-header .doc-status-label {
+	font-size: 10.5px;
+	flex-shrink: 0;
+}
+
+.editor-header-actions {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-shrink: 0;
+	margin-left: auto;
+}
+
+.editor-header-actions .btn.small {
+	height: 30px;
+	padding: 0 10px;
+	font-size: 12px;
 }
 
 /* ---------- Macro panel ---------- */
@@ -464,6 +580,7 @@ body {
 	flex-shrink: 0;
 	border-top: 1px solid var(--border);
 	background: var(--bg-soft);
+	height: 240px;
 	max-height: 40%;
 	display: flex;
 	flex-direction: column;
@@ -471,14 +588,11 @@ body {
 	overflow: hidden;
 }
 
-.macro-panel.empty {
-	padding: 10px 16px;
-}
-
 .macro-hint {
 	font-size: 12px;
 	color: var(--text-faint);
 	line-height: 1.5;
+	padding: 4px 16px 14px;
 }
 
 .macro-hint code {
@@ -497,14 +611,6 @@ body {
 	height: 36px;
 	padding: 0 12px 0 16px;
 	flex-shrink: 0;
-}
-
-.macro-title {
-	font-size: 11px;
-	font-weight: 700;
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
-	color: var(--text-faint);
 }
 
 .macro-count {
@@ -526,28 +632,110 @@ body {
 	height: 26px;
 }
 
-.macro-fields {
+.macro-tabs {
 	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	padding: 4px 16px 14px;
+	align-items: center;
+	gap: 2px;
+	min-width: 0;
+}
+
+.macro-tab {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: 28px;
+	padding: 0 12px;
+	background: transparent;
+	border: none;
+	border-radius: 7px;
+	color: var(--text-dim);
+	font-family: var(--font-sans);
+	font-size: 12.5px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.15s ease;
+	white-space: nowrap;
+}
+
+.macro-tab:hover {
+	color: var(--text);
+	background: var(--bg-elevated);
+}
+
+.macro-tab.active {
+	background: var(--bg-elevated);
+	color: var(--text);
+	box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.macro-body {
+	flex: 1 1 auto;
+	min-height: 0;
 	overflow-y: auto;
 }
 
-.macro-field {
+.macro-fields {
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	padding: 0 16px 8px;
+	overflow-y: auto;
 }
 
-.macro-key {
+.name-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.name-field-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.name-field .doc-name {
+	max-width: none;
+	flex: 1 1 auto;
+	text-align: left;
+}
+
+.name-field .doc-name-input {
+	width: 100%;
+}
+
+/* ---------- Field rows (label | value) ---------- */
+
+.field-row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 8px 0;
+	border-bottom: 1px solid var(--border);
+}
+
+.field-row:last-child {
+	border-bottom: none;
+}
+
+.field-row-label {
+	flex-shrink: 0;
+	min-width: 120px;
 	font-family: var(--font-mono);
-	font-size: 11px;
+	font-size: 11.5px;
 	color: var(--accent-soft);
 	letter-spacing: 0.01em;
+	white-space: nowrap;
 }
 
-.macro-field input {
+.field-row-value {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.field-row-value input {
 	width: 100%;
 	height: 32px;
 	padding: 0 10px;
@@ -562,14 +750,27 @@ body {
 		box-shadow 0.15s ease;
 }
 
-.macro-field input:focus {
+.field-row-value input:focus {
 	outline: none;
 	border-color: var(--accent);
 	box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.18);
 }
 
-.macro-field input::placeholder {
+.field-row-value input::placeholder {
 	color: var(--text-faint);
+}
+
+.size-inputs {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.size-inputs input {
+	width: 100%;
+	min-width: 0;
 }
 
 /* ---------- Preview ---------- */
@@ -586,7 +787,7 @@ body {
 .preview-header {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	gap: 12px;
 	height: 38px;
 	padding: 0 16px;
 	border-bottom: 1px solid var(--border);
@@ -605,6 +806,11 @@ body {
 	font-family: var(--font-mono);
 	font-size: 11.5px;
 	color: var(--text-faint);
+}
+
+.preview-header .btn {
+	margin-left: auto;
+	flex-shrink: 0;
 }
 
 .preview-stage {

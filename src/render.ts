@@ -1,5 +1,6 @@
 import type { Context } from 'hono';
 import { render } from 'satoru-render';
+import { createCSS } from 'satoru-render/tailwind';
 import type { RenderFormat } from './types';
 
 const CONTENT_TYPES: Record<RenderFormat, string> = {
@@ -23,6 +24,7 @@ export function parsePositiveInt(value: string | null | undefined, fallback: num
 export async function renderImage(c: Context, html: string, width: number, height: number, format: RenderFormat): Promise<Response> {
 	const result = await render({
 		value: html,
+		css: await createCSS(html),
 		width,
 		height,
 		format,

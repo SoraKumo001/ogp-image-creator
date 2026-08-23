@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { render, type RequiredResource } from 'satoru-render';
+import { createCSS } from 'satoru-render/tailwind';
 import { applyMacros, type MacroParams } from './macros';
 import type { RenderSettings } from './types';
 
@@ -52,6 +53,7 @@ export function useRenderer(settings: RenderSettings) {
 			try {
 				const result = await render({
 					value: applyMacros(html, params),
+					css: await createCSS(html),
 					width: settings.width,
 					height: settings.height,
 					format: settings.format,

@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { isNonEmptyString } from '../validate';
+import { isNonEmptyString, isValidSlug } from '../validate';
 import {
 	getTemplate,
 	getTemplateMetadata,
@@ -37,7 +37,11 @@ templateRoutes.post('/api/templates', requireAuth, async (c) => {
 		if (!isNonEmptyString(body.name)) {
 			return c.json({ error: 'name is required' }, 400);
 		}
-		const id = body.id ?? crypto.randomUUID();
+		// id（スラッグ）が指定された場合は形式を検証する。空文字は UUID 自動生成にフォールバック。
+		if (body.id != null && body.id !== '' && !isValidSlug(body.id)) {
+			return c.json({ error: 'id must be alphanumeric (with - or _), starting with a letter or number' }, 400);
+		}
+		const id = body.id && body.id !== '' ? body.id : crypto.randomUUID();
 		const data: TemplateData = {
 			html: body.html,
 			width: body.width,

@@ -35,6 +35,8 @@
 	},
 	"dependencies": {
 		"@monaco-editor/react": "4.7.0",
+		"@unocss/core": "^66.8.1",
+		"@unocss/preset-wind4": "^66.8.1",
 		"hono": "4.13.3",
 		"react": "19.2.8",
 		"react-dom": "19.2.8",

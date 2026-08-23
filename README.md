@@ -1,5 +1,7 @@
 # ogp-image-creator
 
+![](./doc/image.png)
+
 HTML を編集するだけで OGP（Open Graph Protocol）画像を生成できるアプリケーションです。ブラウザ上で HTML を編集し、その内容を [satoru-render](https://github.com/SoraKumo001/satoru)（WASM ベースの HTML/CSS → 画像変換エンジン）でレンダリングして画像を返します。
 
 Cloudflare Workers 上で動作し、ヘッドレスブラウザ（Chromium/Puppeteer）を一切必要としません。
@@ -16,6 +18,8 @@ Cloudflare Workers 上で動作し、ヘッドレスブラウザ（Chromium/Pupp
 ## 使い方
 
 ### 1. セットアップとログイン
+
+このリポジトリをCloudflareにデプロイするだけで動きます。データの保存に使うKVは自動生成されます。
 
 初回起動時はセットアップ画面が表示されます。管理者の ID とパスワードを登録すると、以降はその認証情報でログインして編集画面を利用できます。
 

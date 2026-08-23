@@ -3,7 +3,9 @@ import { fetchTemplate, saveTemplate } from './api';
 import { CodeEditor } from './components/CodeEditor';
 import { PreviewPane } from './components/PreviewPane';
 import { Toolbar } from './components/Toolbar';
+import { EditorHeader } from './components/EditorHeader';
 import { TemplatePanel } from './components/TemplatePanel';
+import { SamplePanel } from './components/SamplePanel';
 import { SaveDialog } from './components/SaveDialog';
 import { MacroPanel } from './components/MacroPanel';
 import { AdminPanel } from './components/AdminPanel';
@@ -16,6 +18,7 @@ import { useRenderer } from './useRenderer';
 import { useAuth } from './useAuth';
 import { extractMacroKeys, type MacroParams } from './macros';
 import type { RenderSettings } from './types';
+import type { SampleTemplate } from './samples';
 
 const DEFAULT_SETTINGS: RenderSettings = { width: 1200, height: 630, format: 'png' };
 
@@ -35,7 +38,10 @@ function App() {
 	const [saving, setSaving] = useState(false);
 	const [currentId, setCurrentId] = useState<string | null>(null);
 	const [templateName, setTemplateName] = useState('無題のテンプレート');
+	const [slug, setSlug] = useState('');
+	const [dirty, setDirty] = useState(false);
 	const [templatesOpen, setTemplatesOpen] = useState(false);
+	const [samplesOpen, setSamplesOpen] = useState(false);
 	const [saveOpen, setSaveOpen] = useState(false);
 	const [adminOpen, setAdminOpen] = useState(false);
 	const [apiDocsOpen, setApiDocsOpen] = useState(false);
@@ -67,6 +73,7 @@ function App() {
 	useEffect(() => {
 		if (phase !== 'authenticated') {
 			setTemplatesOpen(false);
+			setSamplesOpen(false);
 			setSaveOpen(false);
 			setAdminOpen(false);
 			setApiDocsOpen(false);
@@ -93,6 +100,30 @@ function App() {
 
 	function handleParamChange(key: string, value: string) {
 		setParams((prev) => ({ ...prev, [key]: value }));
+		setDirty(true);
+	}
+
+	// HTML 編集（エディタ）を反映し、未保存状態にする。
+	function handleHtmlChange(value: string) {
+		setHtml(value);
+		setDirty(true);
+	}
+
+	// サイズ・形式の変更を反映し、未保存状態にする。
+	function handleSettingsChange(next: RenderSettings) {
+		setSettings(next);
+		setDirty(true);
+	}
+
+	// スラッグ（URL 識別子）の変更を反映し、未保存状態にする。
+	function handleSlugChange(value: string) {
+		setSlug(value);
+		setDirty(true);
+	}
+
+	// 保存状態を「保存済み」に戻す。
+	function markClean() {
+		setDirty(false);
 	}
 
 	// 共有 URL に現在のマクロ値をクエリとして付与
@@ -115,15 +146,22 @@ function App() {
 		setSaveOpen(false);
 		setSaving(true);
 		try {
+			const trimmedSlug = slug.trim();
+			if (trimmedSlug && !/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$/.test(trimmedSlug)) {
+				notify('スラッグは英数字（先頭）と - / _ のみ使用できます', 'error');
+				return;
+			}
 			const { id } = await saveTemplate({
-				id: currentId ?? undefined,
+				id: trimmedSlug || currentId || undefined,
 				name,
 				html,
 				width: settings.width,
 				height: settings.height,
 			});
 			setCurrentId(id);
+			setSlug(id);
 			setTemplateName(name);
+			markClean();
 			notify('テンプレートを保存しました');
 		} catch (e) {
 			notify(e instanceof Error ? e.message : '保存に失敗しました', 'error');
@@ -138,10 +176,50 @@ function App() {
 			setHtml(t.html);
 			setSettings((prev) => ({ ...prev, width: t.width || prev.width, height: t.height || prev.height }));
 			setCurrentId(t.id);
+			setSlug(t.id);
 			setTemplateName(t.name);
+			markClean();
 			notify(`「${t.name}」を読み込みました`);
 		} catch (e) {
 			notify(e instanceof Error ? e.message : '読込に失敗しました', 'error');
+		}
+	}
+
+	function handleSelectSample(sample: SampleTemplate) {
+		setHtml(sample.html);
+		setParams(sample.params);
+		setSettings((prev) => ({ ...prev, width: sample.width, height: sample.height }));
+		setCurrentId(null);
+		setSlug('');
+		setTemplateName('無題のテンプレート');
+		setSamplesOpen(false);
+		markClean();
+		notify(`サンプル「${sample.name}」を読み込みました`);
+	}
+
+	// ヘッダからテンプレート名をリネームする
+	async function handleRename(name: string) {
+		const trimmed = name.trim();
+		if (!trimmed || trimmed === templateName) return;
+		if (!currentId) {
+			// 未保存の場合は名前だけ保持（保存時に確定）
+			setTemplateName(trimmed);
+			notify('テンプレート名を変更しました');
+			return;
+		}
+		try {
+			await saveTemplate({
+				id: currentId,
+				name: trimmed,
+				html,
+				width: settings.width,
+				height: settings.height,
+			});
+			setTemplateName(trimmed);
+			markClean();
+			notify('テンプレート名を変更しました');
+		} catch (e) {
+			notify(e instanceof Error ? e.message : '名前の変更に失敗しました', 'error');
 		}
 	}
 
@@ -248,14 +326,9 @@ function App() {
 	return (
 		<div className="app">
 			<Toolbar
-				settings={settings}
-				onSettingsChange={setSettings}
-				onSave={handleSave}
-				onDownload={handleDownload}
-				onOpenTemplates={() => setTemplatesOpen(true)}
+				onOpenSamples={() => setSamplesOpen(true)}
 				onOpenAdmin={() => setAdminOpen(true)}
 				onOpenApiDocs={() => setApiDocsOpen(true)}
-				saving={saving}
 			/>
 
 			<div className="share-bar">
@@ -304,12 +377,17 @@ function App() {
 					style={editorWidth != null ? { flex: `0 0 ${editorWidth}px` } : undefined}
 					hidden={isNarrow && activeTab !== 'editor'}
 				>
-					<div className="pane-label">
-						<span>HTML</span>
-						{currentId && <span className="saved-indicator">保存済み</span>}
-					</div>
+					<EditorHeader
+						templateName={templateName}
+						currentId={currentId}
+						dirty={dirty}
+						saving={saving}
+						onRename={handleRename}
+						onSave={handleSave}
+						onOpenTemplates={() => setTemplatesOpen(true)}
+					/>
 					<div className="editor-wrap">
-						<CodeEditor value={html} onChange={setHtml} />
+						<CodeEditor value={html} onChange={handleHtmlChange} />
 					</div>
 					<div
 						className="macro-resize-handle"
@@ -325,6 +403,10 @@ function App() {
 						keys={macroKeys}
 						params={params}
 						onChange={handleParamChange}
+						settings={settings}
+						onSettingsChange={handleSettingsChange}
+						slug={slug}
+						onSlugChange={handleSlugChange}
 						style={macroHeight != null ? { height: `${macroHeight}px`, flex: 'none', maxHeight: 'none' } : undefined}
 					/>
 				</div>
@@ -350,11 +432,13 @@ function App() {
 						width={settings.width}
 						height={settings.height}
 						format={settings.format}
+						onDownload={handleDownload}
 					/>
 				</div>
 			</div>
 
 			<TemplatePanel open={templatesOpen} onClose={() => setTemplatesOpen(false)} onLoad={handleLoad} />
+			<SamplePanel open={samplesOpen} onClose={() => setSamplesOpen(false)} onSelect={handleSelectSample} />
 			<AdminPanel open={adminOpen} onClose={() => setAdminOpen(false)} onLogout={logout} />
 			<ApiDocsPanel open={apiDocsOpen} onClose={() => setApiDocsOpen(false)} currentTemplateId={currentId} />
 			<SaveDialog open={saveOpen} defaultName={templateName} onCancel={() => setSaveOpen(false)} onConfirm={confirmSave} />
