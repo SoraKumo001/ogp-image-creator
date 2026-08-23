@@ -75,6 +75,27 @@ async function renderImage(c: Context, html: string, width: number, height: numb
 	});
 }
 
+function toHex(bytes: Uint8Array): string {
+	return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function hashString(value: string): Promise<string> {
+	const data = new TextEncoder().encode(value);
+	const digest = await crypto.subtle.digest('SHA-256', data);
+	return toHex(new Uint8Array(digest));
+}
+
+// レンダリング結果のキャッシュキーを生成する。
+// Cache API は GET リクエストのみキーにできるため、内部用の URL を組み立てる。
+function renderCacheKey(segments: string[], query: Record<string, string>): Request {
+	const url = new URL('https://ogp-cache.local/');
+	url.pathname = '/' + segments.map(encodeURIComponent).join('/');
+	for (const [key, value] of Object.entries(query)) {
+		url.searchParams.set(key, value);
+	}
+	return new Request(url.toString());
+}
+
 const app = new Hono<AppEnv>();
 
 // セッション Cookie を生成する。`Secure` 属性は HTTPS 接続時のみ付与する。
@@ -118,7 +139,19 @@ app.post('/api/render', async (c) => {
 		const width = body.width ?? DEFAULT_WIDTH;
 		const height = body.height ?? DEFAULT_HEIGHT;
 		const html = applyMacros(body.html, body.params ?? {});
-		return await renderImage(c, html, width, height, format);
+
+		// 同一入力（HTML + パラメータ + サイズ + 形式）のレンダリング結果をキャッシュする。
+		const cacheKey = renderCacheKey(['render', await hashString(html)], {
+			w: String(width),
+			h: String(height),
+			format,
+		});
+		const cached = await caches.default.match(cacheKey);
+		if (cached) return cached;
+
+		const response = await renderImage(c, html, width, height, format);
+		await caches.default.put(cacheKey, response.clone());
+		return response;
 	} catch (e) {
 		return c.json({ error: `render failed: ${e instanceof Error ? e.message : String(e)}` }, 500);
 	}
@@ -127,12 +160,14 @@ app.post('/api/render', async (c) => {
 // GET /ogp/:id
 app.get('/ogp/:id', async (c) => {
 	const id = c.req.param('id');
-	const raw = await c.env['OGP-IMAGE-CREATOR'].get(id);
-	if (raw == null) {
+	const entry = await c.env['OGP-IMAGE-CREATOR'].getWithMetadata(id);
+	if (entry.value == null) {
 		return c.json({ error: 'template not found' }, 404);
 	}
 	try {
-		const template = JSON.parse(raw) as TemplateData;
+		const template = JSON.parse(entry.value) as TemplateData;
+		const meta = (entry.metadata ?? {}) as Partial<TemplateMetadata>;
+		const updatedAt = meta.updatedAt ?? 0;
 		const width = parsePositiveInt(c.req.query('w'), template.width ?? DEFAULT_WIDTH);
 		const height = parsePositiveInt(c.req.query('h'), template.height ?? DEFAULT_HEIGHT);
 		const format = parseFormat(c.req.query('format'));
@@ -143,7 +178,21 @@ app.get('/ogp/:id', async (c) => {
 			params[key] = value;
 		}
 		const html = applyMacros(template.html, params);
-		return await renderImage(c, html, width, height, format);
+
+		// テンプレート ID + updatedAt + クエリパラメータ + サイズ + 形式ごとにレンダリング結果をキャッシュする。
+		// updatedAt をキーに含めることで、テンプレート更新時に古いキャッシュが自然に無効化される。
+		const cacheKey = renderCacheKey(['ogp', id, String(updatedAt)], {
+			w: String(width),
+			h: String(height),
+			format,
+			...params,
+		});
+		const cached = await caches.default.match(cacheKey);
+		if (cached) return cached;
+
+		const response = await renderImage(c, html, width, height, format);
+		await caches.default.put(cacheKey, response.clone());
+		return response;
 	} catch (e) {
 		return c.json({ error: `render failed: ${e instanceof Error ? e.message : String(e)}` }, 500);
 	}
