@@ -118,22 +118,6 @@ export async function deleteSession(env: Env, token: string): Promise<void> {
 	await env['OGP-IMAGE-CREATOR'].delete(sessionKey(token));
 }
 
-export async function listAdmins(env: Env): Promise<AdminRecord[]> {
-	const list = await env['OGP-IMAGE-CREATOR'].list({ prefix: ADMIN_PREFIX });
-	const admins: AdminRecord[] = [];
-	for (const key of list.keys) {
-		const raw = await env['OGP-IMAGE-CREATOR'].get(key.name);
-		if (raw == null) continue;
-		try {
-			const record = JSON.parse(raw) as AdminRecord;
-			admins.push(record);
-		} catch {
-			// ignore malformed records
-		}
-	}
-	return admins;
-}
-
 export interface AdminEntry {
 	id: string;
 	createdAt: number;

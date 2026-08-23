@@ -9,7 +9,7 @@ export interface RenderSettings {
 export interface TemplateSummary {
 	id: string;
 	name: string;
-	updatedAt: string;
+	updatedAt: number;
 }
 
 export interface TemplateDetail {
@@ -18,7 +18,7 @@ export interface TemplateDetail {
 	html: string;
 	width: number;
 	height: number;
-	updatedAt: string;
+	updatedAt: number;
 }
 
 export interface SaveTemplatePayload {
@@ -36,5 +36,5 @@ export interface AuthStatus {
 
 export interface AdminSummary {
 	id: string;
-	createdAt: string;
+	createdAt: number;
 }
