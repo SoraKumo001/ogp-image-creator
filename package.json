@@ -43,5 +43,9 @@
 		"react": "19.2.8",
 		"react-dom": "19.2.8",
 		"satoru-render": "1.0.14"
-	}
+	},
+	"main": "index.js",
+	"repository": "https://github.com/SoraKumo001/ogp-image-creator",
+	"author": "SoraKumo <info@croud.jp>",
+	"license": "MIT"
 }
