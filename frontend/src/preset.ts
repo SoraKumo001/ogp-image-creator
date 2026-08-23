@@ -137,7 +137,7 @@ export const DEFAULT_HTML = `<!doctype html>
     </p>
 
     <div class="footer">
-      <div class="brand">{{site}}<span> Studio</span></div>
+      <div class="brand">{{site}}<span> Image</span> Creator</div>
       <div class="badge">{{cta}}</div>
     </div>
   </div>

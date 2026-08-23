@@ -43,14 +43,12 @@ export function SetupScreen({ onSubmit }: SetupScreenProps) {
 				<div className="auth-brand">
 					<div className="logo-mark">OG</div>
 					<div className="logo-text">
-						OGP <span>Studio</span>
+						OGP <span>Image</span> Creator
 					</div>
 				</div>
 
 				<h1 className="auth-title">はじめに管理者を設定</h1>
-				<p className="auth-desc">
-					エディタを利用するための管理者アカウントを作成します。この ID とパスワードでログインしてください。
-				</p>
+				<p className="auth-desc">エディタを利用するための管理者アカウントを作成します。この ID とパスワードでログインしてください。</p>
 
 				<form className="auth-form" onSubmit={handleSubmit}>
 					<label className="field full">
