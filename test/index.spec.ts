@@ -51,9 +51,9 @@ describe("auth helpers", () => {
 describe("OGP image worker", () => {
 	beforeEach(async () => {
 		// 各テスト前に KV をクリーンにする
-		const list = await env.TEMPLATES.list();
+		const list = await env["OGP-IMAGE-CREATOR"].list();
 		for (const key of list.keys) {
-			await env.TEMPLATES.delete(key.name);
+			await env["OGP-IMAGE-CREATOR"].delete(key.name);
 		}
 	});
 
@@ -136,9 +136,9 @@ describe("OGP image worker", () => {
 
 describe("authentication", () => {
 	beforeEach(async () => {
-		const list = await env.TEMPLATES.list();
+		const list = await env["OGP-IMAGE-CREATOR"].list();
 		for (const key of list.keys) {
-			await env.TEMPLATES.delete(key.name);
+			await env["OGP-IMAGE-CREATOR"].delete(key.name);
 		}
 	});
 

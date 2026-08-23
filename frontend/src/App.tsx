@@ -40,23 +40,22 @@ function App() {
 	const [adminOpen, setAdminOpen] = useState(false);
 	const [apiDocsOpen, setApiDocsOpen] = useState(false);
 	const [toast, setToast] = useState<Toast | null>(null);
-	const [sharedUrl, setSharedUrl] = useState<string | null>(null);
 
-  const { state, renderHtml } = useRenderer(settings);
-  const renderTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const { state, renderHtml } = useRenderer(settings);
+	const renderTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const macroKeys = useMemo(() => extractMacroKeys(html), [html]);
+	const macroKeys = useMemo(() => extractMacroKeys(html), [html]);
 
-  // 認証状態が「認証済み」以外に変わったら、開いているパネル等の UI 状態をリセットする。
-  // これによりログアウト→再ログイン時に前回のパネルが開いたまま残るのを防ぐ。
-  useEffect(() => {
-    if (phase !== 'authenticated') {
-      setTemplatesOpen(false);
-      setSaveOpen(false);
-      setAdminOpen(false);
-      setApiDocsOpen(false);
-    }
-  }, [phase]);
+	// 認証状態が「認証済み」以外に変わったら、開いているパネル等の UI 状態をリセットする。
+	// これによりログアウト→再ログイン時に前回のパネルが開いたまま残るのを防ぐ。
+	useEffect(() => {
+		if (phase !== 'authenticated') {
+			setTemplatesOpen(false);
+			setSaveOpen(false);
+			setAdminOpen(false);
+			setApiDocsOpen(false);
+		}
+	}, [phase]);
 
 	const notify = useCallback((message: string, kind: Toast['kind'] = 'success') => {
 		setToast({ id: Date.now(), message, kind });
@@ -106,7 +105,6 @@ function App() {
 			});
 			setCurrentId(id);
 			setTemplateName(name);
-			setSharedUrl(buildSharedUrl(id));
 			notify('テンプレートを保存しました');
 		} catch (e) {
 			notify(e instanceof Error ? e.message : '保存に失敗しました', 'error');
@@ -123,8 +121,7 @@ function App() {
 			setCurrentId(t.id);
 			setTemplateName(t.name);
 			setSharedUrl(buildSharedUrl(t.id));
-			setTemplatesOpen(false);
-			notify(`「${t.name}」を読み込みました`);
+			setify(`「${t.name}」を読み込みました`);
 		} catch (e) {
 			notify(e instanceof Error ? e.message : '読込に失敗しました', 'error');
 		}
@@ -144,21 +141,21 @@ function App() {
 		a.remove();
 	}
 
-  async function copyUrl() {
-    if (!currentId) return;
-    const url = buildSharedUrl(currentId);
-    try {
-      await navigator.clipboard.writeText(url);
-      notify('URL をコピーしました');
-    } catch {
-      notify('コピーに失敗しました', 'error');
-    }
-  }
+	async function copyUrl() {
+		if (!currentId) return;
+		const url = buildSharedUrl(currentId);
+		try {
+			await navigator.clipboard.writeText(url);
+			notify('URL をコピーしました');
+		} catch {
+			notify('コピーに失敗しました', 'error');
+		}
+	}
 
-  function openUrl() {
-    if (!currentId) return;
-    window.open(buildSharedUrl(currentId), '_blank', 'noopener,noreferrer');
-  }
+	function openUrl() {
+		if (!currentId) return;
+		window.open(buildSharedUrl(currentId), '_blank', 'noopener,noreferrer');
+	}
 
 	if (phase === 'loading') {
 		return (
@@ -212,44 +209,27 @@ function App() {
 				/>
 			</div>
 
-          <div className="share-bar">
-            <div className="share-bar-inner">
-              <span className="share-label">OGP 画像 URL</span>
-              {currentId ? (
-                <code className="share-url">{buildSharedUrl(currentId)}</code>
-              ) : (
-                <span className="share-url placeholder">
-                  テンプレートを保存すると、ここに OGP 画像 URL が表示されます。
-                </span>
-              )}
-              <button
-                type="button"
-                className="btn ghost small"
-                onClick={copyUrl}
-                disabled={!currentId}
-              >
-                コピー
-              </button>
-              <button
-                type="button"
-                className="btn ghost small"
-                onClick={openUrl}
-                disabled={!currentId}
-              >
-                別タブで開く
-              </button>
-            </div>
-          </div>
+			<div className="share-bar">
+				<div className="share-bar-inner">
+					<span className="share-label">OGP 画像 URL</span>
+					{currentId ? (
+						<code className="share-url">{buildSharedUrl(currentId)}</code>
+					) : (
+						<span className="share-url placeholder">テンプレートを保存すると、ここに OGP 画像 URL が表示されます。</span>
+					)}
+					<button type="button" className="btn ghost small" onClick={copyUrl} disabled={!currentId}>
+						コピー
+					</button>
+					<button type="button" className="btn ghost small" onClick={openUrl} disabled={!currentId}>
+						別タブで開く
+					</button>
+				</div>
+			</div>
 
 			<TemplatePanel open={templatesOpen} onClose={() => setTemplatesOpen(false)} onLoad={handleLoad} />
 			<AdminPanel open={adminOpen} onClose={() => setAdminOpen(false)} onLogout={logout} />
 			<ApiDocsPanel open={apiDocsOpen} onClose={() => setApiDocsOpen(false)} currentTemplateId={currentId} />
-			<SaveDialog
-				open={saveOpen}
-				defaultName={templateName}
-				onCancel={() => setSaveOpen(false)}
-				onConfirm={confirmSave}
-			/>
+			<SaveDialog open={saveOpen} defaultName={templateName} onCancel={() => setSaveOpen(false)} onConfirm={confirmSave} />
 			<ToastContainer toast={toast} onDismiss={() => setToast(null)} />
 		</div>
 	);

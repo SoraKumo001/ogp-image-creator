@@ -34,7 +34,7 @@ export function LoginScreen({ onSubmit }: LoginScreenProps) {
 				<div className="auth-brand">
 					<div className="logo-mark">OG</div>
 					<div className="logo-text">
-						OGP <span>Studio</span>
+						OGP <span>Image</span> Creator
 					</div>
 				</div>
 
