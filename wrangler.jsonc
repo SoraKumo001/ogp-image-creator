@@ -1,0 +1,28 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "ogp-image-creator",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-08-20",
+	"observability": {
+		"enabled": true,
+	},
+	"upload_source_maps": true,
+	/**
+	 * Static Assets
+	 * https://developers.cloudflare.com/workers/static-assets/binding/
+	 */
+	"assets": { "directory": "./public/", "binding": "ASSETS" },
+	/**
+	 * KV Namespaces
+	 * https://developers.cloudflare.com/workers/wrangler/configuration/#kv-namespaces
+	 *
+	 * id を指定しない「自動プロビジョニング」を利用しています。
+	 * - `wrangler dev` ではローカル KV が自動生成され、実行間で永続化されます。
+	 * - `wrangler deploy` では KV ネームスペースが自動作成され、その id がこのファイルに書き戻されます。
+	 */
+	"kv_namespaces": [{ "binding": "OGP-IMAGE-CREATOR" }],
+}
