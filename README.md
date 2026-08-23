@@ -15,12 +15,12 @@ Cloudflare Workers 上で動作し、ヘッドレスブラウザ（Chromium/Pupp
 
 ## 技術スタック
 
-| レイヤ | 技術 |
-|--------|------|
-| バックエンド | Cloudflare Workers + [Hono](https://hono.dev/) |
-| レンダリング | [satoru-render](https://www.npmjs.com/package/satoru-render)（WASM / Skia + litehtml） |
-| フロントエンド | React + Vite + Monaco Editor |
-| ストレージ | Cloudflare KV（テンプレート保存） |
+| レイヤ         | 技術                                                                                   |
+| -------------- | -------------------------------------------------------------------------------------- |
+| バックエンド   | Cloudflare Workers + [Hono](https://hono.dev/)                                         |
+| レンダリング   | [satoru-render](https://www.npmjs.com/package/satoru-render)（WASM / Skia + litehtml） |
+| フロントエンド | React + Vite + Monaco Editor                                                           |
+| ストレージ     | Cloudflare KV（テンプレート保存）                                                      |
 
 ## セットアップ
 
@@ -47,24 +47,24 @@ pnpm deploy
 
 ## API
 
-| メソッド | パス | 説明 |
-|----------|------|------|
-| `POST` | `/api/render` | HTML を画像にレンダリング |
-| `GET` | `/ogp/:id` | 保存済みテンプレートを画像配信 |
-| `GET` | `/api/proxy?url=` | 外部リソース取得（CORS 回避） |
-| `GET` | `/api/templates` | テンプレート一覧 |
-| `POST` | `/api/templates` | テンプレート保存 |
-| `GET` | `/api/templates/:id` | テンプレート取得 |
-| `DELETE` | `/api/templates/:id` | テンプレート削除 |
+| メソッド | パス                 | 説明                           |
+| -------- | -------------------- | ------------------------------ |
+| `POST`   | `/api/render`        | HTML を画像にレンダリング      |
+| `GET`    | `/ogp/:id`           | 保存済みテンプレートを画像配信 |
+| `GET`    | `/api/proxy?url=`    | 外部リソース取得（CORS 回避）  |
+| `GET`    | `/api/templates`     | テンプレート一覧               |
+| `POST`   | `/api/templates`     | テンプレート保存               |
+| `GET`    | `/api/templates/:id` | テンプレート取得               |
+| `DELETE` | `/api/templates/:id` | テンプレート削除               |
 
 ### `POST /api/render`
 
 ```json
 {
-  "html": "<h1>Hello OGP</h1>",
-  "width": 1200,
-  "height": 630,
-  "format": "png"
+	"html": "<h1>Hello OGP</h1>",
+	"width": 1200,
+	"height": 630,
+	"format": "png"
 }
 ```
 
@@ -96,15 +96,10 @@ pnpm deploy
 
 ## スクリプト
 
-| コマンド | 説明 |
-|----------|------|
-| `pnpm dev` | ローカル開発サーバー起動 |
-| `pnpm build` | フロントエンドをビルド |
-| `pnpm test` | テスト実行 |
+| コマンド          | 説明                      |
+| ----------------- | ------------------------- |
+| `pnpm dev`        | ローカル開発サーバー起動  |
+| `pnpm build`      | フロントエンドをビルド    |
+| `pnpm test`       | テスト実行                |
 | `pnpm cf-typegen` | Wrangler の型定義を再生成 |
-| `pnpm deploy` | Cloudflare にデプロイ |
-
-## 注意事項
-
-- **バンドルサイズ** — satoru-render の WASM が約 10MB（gzip 3.7MB）あります。実用時は遅延ロードや Brotli 配信の検討を推奨します。
-- **プレビューと実出力の差異** — satoru-render は litehtml エンジンを使用するため、ブラウザの iframe 表示とは見た目が異なる場合があります。本アプリはブラウザ内でも satoru-render を実行するため、プレビューと実出力は一致します。
+| `pnpm deploy`     | Cloudflare にデプロイ     |
