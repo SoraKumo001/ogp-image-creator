@@ -11,6 +11,7 @@ import { MacroPanel } from './components/MacroPanel';
 import { AdminPanel } from './components/AdminPanel';
 import { ApiDocsPanel } from './components/ApiDocsPanel';
 import { GeneratePanel } from './components/GeneratePanel';
+import { AssetPanel } from './components/AssetPanel';
 import { SetupScreen } from './components/SetupScreen';
 import { LoginScreen } from './components/LoginScreen';
 import { ToastContainer, type Toast } from './components/Toast';
@@ -46,7 +47,8 @@ function App() {
 	const [saveOpen, setSaveOpen] = useState(false);
 	const [adminOpen, setAdminOpen] = useState(false);
 	const [apiDocsOpen, setApiDocsOpen] = useState(false);
-	const [generateOpen, setGenerateOpen] = useState(false);
+  const [generateOpen, setGenerateOpen] = useState(false);
+  const [assetsOpen, setAssetsOpen] = useState(false);
 	const [toast, setToast] = useState<Toast | null>(null);
 	const [editorWidth, setEditorWidth] = useState<number | null>(null);
 	const [macroHeight, setMacroHeight] = useState<number | null>(null);
@@ -78,10 +80,11 @@ function App() {
 			setSamplesOpen(false);
 			setSaveOpen(false);
 			setAdminOpen(false);
-			setApiDocsOpen(false);
-			setGenerateOpen(false);
-		}
-	}, [phase]);
+      setApiDocsOpen(false);
+      setGenerateOpen(false);
+      setAssetsOpen(false);
+    }
+  }, [phase]);
 
 	const notify = useCallback((message: string, kind: Toast['kind'] = 'success') => {
 		setToast({ id: Date.now(), message, kind });
@@ -340,9 +343,10 @@ function App() {
 			<Toolbar
 				onOpenSamples={() => setSamplesOpen(true)}
 				onOpenAdmin={() => setAdminOpen(true)}
-				onOpenApiDocs={() => setApiDocsOpen(true)}
-				onOpenGenerate={() => setGenerateOpen(true)}
-			/>
+        onOpenApiDocs={() => setApiDocsOpen(true)}
+        onOpenGenerate={() => setGenerateOpen(true)}
+        onOpenAssets={() => setAssetsOpen(true)}
+      />
 
 			<div className="share-bar">
 				<div className="share-bar-inner">
@@ -460,7 +464,8 @@ function App() {
 				onInsert={handleInsertGenerated}
 				notify={notify}
 			/>
-			<SaveDialog open={saveOpen} defaultName={templateName} onCancel={() => setSaveOpen(false)} onConfirm={confirmSave} />
+        <AssetPanel open={assetsOpen} onClose={() => setAssetsOpen(false)} />
+        <SaveDialog open={saveOpen} defaultName={templateName} onCancel={() => setSaveOpen(false)} onConfirm={confirmSave} />
 			<ToastContainer toast={toast} onDismiss={() => setToast(null)} />
 		</div>
 	);

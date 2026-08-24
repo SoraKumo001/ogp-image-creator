@@ -1055,8 +1055,102 @@ body {
 }
 
 .template-date {
-	font-size: 11.5px;
-	color: var(--text-faint);
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+/* ---------- Asset panel ---------- */
+
+.asset-upload {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+  padding: 8px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.asset-upload.dragging {
+  border-color: var(--accent);
+  background: rgba(124, 92, 255, 0.1);
+}
+
+.asset-file-input {
+  display: none;
+}
+
+.asset-hint {
+  margin: 0 0 16px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.asset-hint code {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--accent-soft);
+  background: var(--bg-elevated);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.asset-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.asset-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  transition: border-color 0.15s ease;
+}
+
+.asset-item:hover {
+  border-color: var(--border-strong);
+}
+
+.asset-thumb {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+}
+
+.asset-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.asset-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.asset-meta {
+  font-size: 11.5px;
+  color: var(--text-faint);
 }
 
 /* ---------- Dialog ---------- */

@@ -35,6 +35,22 @@ export interface AuthStatus {
 }
 
 export interface AdminSummary {
-	id: string;
-	createdAt: number;
+  id: string;
+  createdAt: number;
+}
+
+export interface AssetSummary {
+  id: string;
+  name: string;
+  contentType: string;
+  size: number;
+  updatedAt: number;
+}
+
+export interface UploadedAsset {
+  id: string;
+  name: string;
+  contentType: string;
+  size: number;
+  url: string;
 }

@@ -1,4 +1,4 @@
-import type { AdminSummary, AuthStatus, SaveTemplatePayload, TemplateDetail, TemplateSummary } from './types';
+import type { AdminSummary, AssetSummary, AuthStatus, SaveTemplatePayload, TemplateDetail, TemplateSummary, UploadedAsset } from './types';
 
 const json = (init: RequestInit = {}): RequestInit => ({
 	...init,
@@ -86,7 +86,36 @@ export async function saveTemplate(payload: SaveTemplatePayload): Promise<{ id: 
 }
 
 export async function deleteTemplate(id: string): Promise<void> {
-	return request<void>(`/api/templates/${id}`, { method: 'DELETE' });
+  return request<void>(`/api/templates/${id}`, { method: 'DELETE' });
+}
+
+/* ---------- 画像アセット ---------- */
+
+export async function fetchAssets(): Promise<AssetSummary[]> {
+  const data = await request<{ assets: AssetSummary[] }>('/api/assets');
+  return data.assets;
+}
+
+export async function deleteAsset(id: string): Promise<void> {
+  return request<void>(`/api/assets/${id}`, { method: 'DELETE' });
+}
+
+export async function uploadAsset(file: File): Promise<UploadedAsset> {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch('/api/assets', {
+    method: 'POST',
+    credentials: 'include',
+    body: form,
+  });
+  if (res.status === 401) {
+    onUnauthorized?.();
+    throw new ApiError('認証が必要です', 401);
+  }
+  if (!res.ok) {
+    throw new ApiError(`リクエストに失敗しました (${res.status})`, res.status);
+  }
+  return (await res.json()) as UploadedAsset;
 }
 
 /* ---------- AI 生成（モデル一覧・ストリーミング） ---------- */

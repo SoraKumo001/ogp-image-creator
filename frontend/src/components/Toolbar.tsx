@@ -1,11 +1,12 @@
 interface ToolbarProps {
-	onOpenSamples: () => void;
-	onOpenAdmin: () => void;
-	onOpenApiDocs: () => void;
-	onOpenGenerate: () => void;
+  onOpenSamples: () => void;
+  onOpenAdmin: () => void;
+  onOpenApiDocs: () => void;
+  onOpenGenerate: () => void;
+  onOpenAssets: () => void;
 }
 
-export function Toolbar({ onOpenSamples, onOpenAdmin, onOpenApiDocs, onOpenGenerate }: ToolbarProps) {
+export function Toolbar({ onOpenSamples, onOpenAdmin, onOpenApiDocs, onOpenGenerate, onOpenAssets }: ToolbarProps) {
 	return (
 		<header className="toolbar">
 			<div className="toolbar-brand">
@@ -34,6 +35,15 @@ export function Toolbar({ onOpenSamples, onOpenAdmin, onOpenApiDocs, onOpenGener
 							/>
 						</svg>
 						<span className="btn-label">API</span>
+					</button>
+					<button type="button" className="btn ghost" onClick={onOpenAssets}>
+						<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+							<path
+								fill="currentColor"
+								d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Zm0 2v9.2l-3.3-3.3a1 1 0 0 0-1.4 0l-3.6 3.6-1.6-1.6a1 1 0 0 0-1.4 0L5 15.6V5h14ZM5 19v-1.6l3.3-3.3 1.6 1.6a1 1 0 0 0 1.4 0l3.6-3.6 3.1 3.1V19H5Zm3-9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
+							/>
+						</svg>
+						<span className="btn-label">アセット</span>
 					</button>
 					<button type="button" className="btn ghost" onClick={onOpenSamples}>
 						<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">

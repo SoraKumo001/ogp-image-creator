@@ -7,6 +7,7 @@ import { adminRoutes } from './routes/admins';
 import { proxyRoutes } from './routes/proxy';
 import { templateRoutes } from './routes/templates';
 import { generateRoutes } from './routes/generate';
+import { assetRoutes } from './routes/assets';
 import type { AppEnv } from './types';
 
 const app = new Hono<AppEnv>();
@@ -18,6 +19,7 @@ app.route('/', adminRoutes);
 app.route('/', proxyRoutes);
 app.route('/', templateRoutes);
 app.route('/', generateRoutes);
+app.route('/', assetRoutes);
 
 // GET / (static assets)
 app.get('*', (c) => c.env.ASSETS.fetch(c.req.raw));

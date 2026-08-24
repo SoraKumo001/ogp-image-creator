@@ -1,6 +1,7 @@
 import type { Context } from 'hono';
 import { render } from 'satoru-render';
 import { createCSS } from 'satoru-render/tailwind';
+import { getAsset, decodeBase64 } from './assets';
 import type { RenderFormat } from './types';
 
 const CONTENT_TYPES: Record<RenderFormat, string> = {
@@ -28,6 +29,17 @@ export async function renderImage(c: Context, html: string, width: number, heigh
 		width,
 		height,
 		format,
+		resolveResource: async (resource, defaultResolver) => {
+			// 相対パス画像（/assets/:id）は KV から解決する。
+			// それ以外は defaultResolver に委譲する。
+			if (resource.url.startsWith('/assets/')) {
+				const id = resource.url.slice('/assets/'.length);
+				const asset = await getAsset(c.env, id);
+				if (asset) return decodeBase64(asset.data);
+				return null;
+			}
+			return defaultResolver(resource);
+		},
 	});
 	const body = typeof result === 'string' ? result : new Uint8Array(result);
 	return c.body(body, 200, {

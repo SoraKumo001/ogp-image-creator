@@ -29,6 +29,17 @@ async function resolveViaProxy(resource: RequiredResource): Promise<Uint8Array |
 			return null;
 		}
 	}
+	// アップロード済みアセット（/assets/）はプロキシを介さず直接取得する
+	if (url.startsWith('/assets/')) {
+		try {
+			const res = await fetch(url, { credentials: 'include' });
+			if (!res.ok) return null;
+			const buf = await res.arrayBuffer();
+			return new Uint8Array(buf);
+		} catch {
+			return null;
+		}
+	}
 	// 相対パスやスキームのない URL はプロキシ対象外
 	if (!/^https?:\/\//i.test(url)) return null;
 
