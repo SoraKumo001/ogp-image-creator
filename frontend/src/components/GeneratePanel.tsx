@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Panel } from './Panel';
 import { fetchModels, streamGenerate, type GenerateHandle, type ModelOption } from '../api';
+import { DEFAULT_WIDTH, DEFAULT_HEIGHT, MIN_DIMENSION, MAX_DIMENSION } from '../../../shared/constants';
 
 interface GeneratePanelProps {
 	open: boolean;
@@ -10,8 +11,6 @@ interface GeneratePanelProps {
 }
 
 const DEFAULT_PROMPT = '';
-const DEFAULT_WIDTH = 1200;
-const DEFAULT_HEIGHT = 630;
 
 /**
  * モデル出力から markdown のコードフェンスを取り除く。
@@ -216,8 +215,8 @@ export function GeneratePanel({ open, onClose, onInsert, notify }: GeneratePanel
 									<input
 										type="number"
 										value={width}
-										min={120}
-										max={4096}
+										min={MIN_DIMENSION}
+										max={MAX_DIMENSION}
 										disabled={generating}
 										onChange={(e) => {
 											const n = Number(e.target.value);
@@ -231,8 +230,8 @@ export function GeneratePanel({ open, onClose, onInsert, notify }: GeneratePanel
 									<input
 										type="number"
 										value={height}
-										min={120}
-										max={4096}
+										min={MIN_DIMENSION}
+										max={MAX_DIMENSION}
 										disabled={generating}
 										onChange={(e) => {
 											const n = Number(e.target.value);

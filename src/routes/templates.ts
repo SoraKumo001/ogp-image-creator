@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { errorMessage } from '../../shared/errors';
 import { isNonEmptyString, isValidSlug } from '../validate';
 import {
 	getTemplate,
@@ -54,7 +55,7 @@ templateRoutes.post('/api/templates', requireAuth, async (c) => {
 		await putTemplate(c.env, id, data, metadata);
 		return c.json({ id });
 	} catch (e) {
-		return c.json({ error: `save failed: ${e instanceof Error ? e.message : String(e)}` }, 500);
+		return c.json({ error: `save failed: ${errorMessage(e)}` }, 500);
 	}
 });
 

@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { errorMessage } from '../../shared/errors';
 import { putAsset, getAsset, deleteAsset, listAssets, encodeBase64, decodeBase64 } from '../assets';
 import { requireAuth } from '../middleware';
 import type { AppEnv } from '../types';
@@ -30,7 +31,7 @@ assetRoutes.post('/api/assets', requireAuth, async (c) => {
 		});
 		return c.json({ id, name: file.name, contentType, size: file.size, url: '/assets/' + id });
 	} catch (e) {
-		return c.json({ error: `upload failed: ${e instanceof Error ? e.message : String(e)}` }, 500);
+		return c.json({ error: `upload failed: ${errorMessage(e)}` }, 500);
 	}
 });
 

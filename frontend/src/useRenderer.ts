@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { render, type RequiredResource } from 'satoru-render';
 import { createCSS } from 'satoru-render/tailwind';
 import { applyMacros, type MacroParams } from './macros';
+import { decodeBase64 } from '../../shared/encoding';
 import type { RenderSettings } from './types';
 
 interface RenderState {
@@ -21,10 +22,7 @@ async function resolveViaProxy(resource: RequiredResource): Promise<Uint8Array |
 	if (url.startsWith('data:')) {
 		try {
 			const base64 = url.slice(url.indexOf(',') + 1);
-			const binary = atob(base64);
-			const bytes = new Uint8Array(binary.length);
-			for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-			return bytes;
+			return decodeBase64(base64);
 		} catch {
 			return null;
 		}

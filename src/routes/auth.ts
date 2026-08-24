@@ -12,6 +12,7 @@ import {
 	SESSION_COOKIE,
 } from '../auth';
 import { isNonEmptyString } from '../validate';
+import { kv } from '../kv';
 import { sessionCookieHeader } from '../middleware';
 import type { AppEnv } from '../types';
 
@@ -40,7 +41,7 @@ authRoutes.post('/api/setup', async (c) => {
 		return c.json({ error: 'password is required' }, 400);
 	}
 	const passwordHash = await hashPassword(body.password);
-	await c.env['OGP-IMAGE-CREATOR'].put(adminKey(body.id), JSON.stringify({ passwordHash, createdAt: Date.now() }));
+	await kv(c.env).put(adminKey(body.id), JSON.stringify({ passwordHash, createdAt: Date.now() }));
 	const token = await createSession(c.env, body.id);
 	c.header('Set-Cookie', sessionCookieHeader(c, token, 604800));
 	return c.json({ ok: true });

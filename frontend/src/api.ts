@@ -39,6 +39,30 @@ async function request<T>(url: string, init: RequestInit = {}): Promise<T> {
 	return (await res.json()) as T;
 }
 
+/**
+ * レスポンスのステータスを検証し、401 や非 2xx の場合は ApiError を投げる。
+ * `extractJsonError` を指定すると、非 2xx 時にレスポンスボディの
+ * `{ error: string }` からメッセージを抽出する（失敗時はデフォルトメッセージ）。
+ */
+async function ensureOk(res: Response, opts: { extractJsonError?: boolean } = {}): Promise<void> {
+	if (res.status === 401) {
+		onUnauthorized?.();
+		throw new ApiError('認証が必要です', 401);
+	}
+	if (!res.ok) {
+		let message = `リクエストに失敗しました (${res.status})`;
+		if (opts.extractJsonError) {
+			try {
+				const body = (await res.json()) as { error?: string };
+				if (typeof body.error === 'string' && body.error) message = body.error;
+			} catch {
+				// JSON 以外のエラーレスポンスはデフォルトメッセージを使用
+			}
+		}
+		throw new ApiError(message, res.status);
+	}
+}
+
 /* ---------- 認証・管理者 ---------- */
 
 export async function fetchAuthStatus(): Promise<AuthStatus> {
@@ -108,13 +132,7 @@ export async function uploadAsset(file: File): Promise<UploadedAsset> {
     credentials: 'include',
     body: form,
   });
-  if (res.status === 401) {
-    onUnauthorized?.();
-    throw new ApiError('認証が必要です', 401);
-  }
-  if (!res.ok) {
-    throw new ApiError(`リクエストに失敗しました (${res.status})`, res.status);
-  }
+  await ensureOk(res);
   return (await res.json()) as UploadedAsset;
 }
 
@@ -165,21 +183,7 @@ export function streamGenerate(
 				signal: controller.signal,
 			});
 
-			if (res.status === 401) {
-				onUnauthorized?.();
-				throw new ApiError('認証が必要です', 401);
-			}
-
-			if (!res.ok) {
-				let message = `リクエストに失敗しました (${res.status})`;
-				try {
-					const body = (await res.json()) as { error?: string };
-					if (typeof body.error === 'string' && body.error) message = body.error;
-				} catch {
-					// JSON 以外のエラーレスポンスはデフォルトメッセージを使用
-				}
-				throw new ApiError(message, res.status);
-			}
+			await ensureOk(res, { extractJsonError: true });
 
 			const body = res.body;
 			if (!body) throw new ApiError('ストリームを取得できませんでした', res.status);

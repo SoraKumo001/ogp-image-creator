@@ -82,7 +82,7 @@ describe('/api/generate', () => {
 		expect(text).toContain('[DONE]');
 		// AI.run がデフォルトモデルで呼ばれたことを検証
 		expect(env.AI.run).toHaveBeenCalledWith(
-			'@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+			'@cf/google/gemma-4-26b-a4b-it',
 			expect.objectContaining({ stream: true, max_tokens: 4096 }),
 		);
 	});

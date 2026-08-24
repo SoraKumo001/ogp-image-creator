@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { hashPassword, listAdminEntries, getAdmin, adminKey } from '../auth';
+import { kv } from '../kv';
 import { isNonEmptyString } from '../validate';
 import { requireAuth } from '../middleware';
 import type { AppEnv } from '../types';
@@ -26,7 +27,7 @@ adminRoutes.post('/api/admins', requireAuth, async (c) => {
 		return c.json({ error: 'admin already exists' }, 409);
 	}
 	const passwordHash = await hashPassword(body.password);
-	await c.env['OGP-IMAGE-CREATOR'].put(adminKey(body.id), JSON.stringify({ passwordHash, createdAt: Date.now() }));
+	await kv(c.env).put(adminKey(body.id), JSON.stringify({ passwordHash, createdAt: Date.now() }));
 	return c.json({ ok: true });
 });
 
@@ -41,6 +42,6 @@ adminRoutes.delete('/api/admins/:id', requireAuth, async (c) => {
 	if (target == null) {
 		return c.json({ error: 'admin not found' }, 404);
 	}
-	await c.env['OGP-IMAGE-CREATOR'].delete(adminKey(id));
+	await kv(c.env).delete(adminKey(id));
 	return c.json({ ok: true });
 });

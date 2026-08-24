@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { MacroParams } from '../macros';
+import { MIN_DIMENSION, MAX_DIMENSION } from '../../../shared/constants';
 import type { RenderSettings } from '../types';
 
 type TabId = 'params' | 'settings';
@@ -131,12 +132,12 @@ export function MacroPanel({ keys, params, onChange, settings, onSettingsChange,
 
 							<FieldRow label="サイズ">
 								<div className="size-inputs">
-									<NumberInput value={settings.width} min={120} max={4096} onChange={(w) => onSettingsChange({ ...settings, width: w })} />
+									<NumberInput value={settings.width} min={MIN_DIMENSION} max={MAX_DIMENSION} onChange={(w) => onSettingsChange({ ...settings, width: w })} />
 									<span className="x-mark">×</span>
 									<NumberInput
 										value={settings.height}
-										min={120}
-										max={4096}
+										min={MIN_DIMENSION}
+										max={MAX_DIMENSION}
 										onChange={(h) => onSettingsChange({ ...settings, height: h })}
 									/>
 								</div>

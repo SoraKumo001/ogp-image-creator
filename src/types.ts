@@ -1,4 +1,4 @@
-export type RenderFormat = 'png' | 'webp' | 'svg';
+export type { RenderFormat } from '../shared/types';
 
 export type AppEnv = {
 	Bindings: Env;

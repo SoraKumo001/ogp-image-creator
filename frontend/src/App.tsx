@@ -19,10 +19,13 @@ import { DEFAULT_HTML } from './preset';
 import { useRenderer } from './useRenderer';
 import { useAuth } from './useAuth';
 import { extractMacroKeys, type MacroParams } from './macros';
+import { DEFAULT_WIDTH, DEFAULT_HEIGHT } from '../../shared/constants';
+import { isValidSlug } from '../../shared/validate';
+import { useResizable } from './useResizable';
 import type { RenderSettings } from './types';
 import type { SampleTemplate } from './samples';
 
-const DEFAULT_SETTINGS: RenderSettings = { width: 1200, height: 630, format: 'png' };
+const DEFAULT_SETTINGS: RenderSettings = { width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT, format: 'png' };
 
 const DEFAULT_PARAMS: MacroParams = {
 	category: 'Product Update',
@@ -58,8 +61,15 @@ function App() {
 	const { state, renderHtml } = useRenderer(settings);
 	const renderTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const workspaceRef = useRef<HTMLDivElement | null>(null);
-	const dragState = useRef<{ startX: number; startWidth: number } | null>(null);
-	const macroDragState = useRef<{ startY: number; startHeight: number } | null>(null);
+
+	const {
+		handleResizeStart,
+		handleResizeMove,
+		handleResizeEnd,
+		handleMacroResizeStart,
+		handleMacroResizeMove,
+		handleMacroResizeEnd,
+	} = useResizable(workspaceRef, setEditorWidth, setMacroHeight);
 
 	const macroKeys = useMemo(() => extractMacroKeys(html), [html]);
 
@@ -153,7 +163,7 @@ function App() {
 		setSaving(true);
 		try {
 			const trimmedSlug = slug.trim();
-			if (trimmedSlug && !/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$/.test(trimmedSlug)) {
+			if (trimmedSlug && !isValidSlug(trimmedSlug)) {
 				notify('スラッグは英数字（先頭）と - / _ のみ使用できます', 'error');
 				return;
 			}
@@ -266,57 +276,6 @@ function App() {
 	function openUrl() {
 		if (!currentId) return;
 		window.open(buildSharedUrl(currentId), '_blank', 'noopener,noreferrer');
-	}
-
-	// エディタペインの幅をドラッグで変更する
-	function handleResizeStart(e: React.PointerEvent<HTMLDivElement>) {
-		const workspace = workspaceRef.current;
-		if (!workspace) return;
-		const editorPane = workspace.querySelector<HTMLElement>('.editor-pane');
-		if (!editorPane) return;
-		dragState.current = { startX: e.clientX, startWidth: editorPane.getBoundingClientRect().width };
-		e.currentTarget.setPointerCapture(e.pointerId);
-	}
-
-	function handleResizeMove(e: React.PointerEvent<HTMLDivElement>) {
-		const drag = dragState.current;
-		const workspace = workspaceRef.current;
-		if (!drag || !workspace) return;
-		const delta = e.clientX - drag.startX;
-		const min = 320;
-		const max = workspace.getBoundingClientRect().width - 240;
-		const next = Math.max(min, Math.min(max, drag.startWidth + delta));
-		setEditorWidth(next);
-	}
-
-	function handleResizeEnd() {
-		dragState.current = null;
-	}
-
-	// パラメータパネルの高さをドラッグで変更する
-	function handleMacroResizeStart(e: React.PointerEvent<HTMLDivElement>) {
-		const editorPane = e.currentTarget.closest<HTMLElement>('.editor-pane');
-		if (!editorPane) return;
-		const macroPanel = editorPane.querySelector<HTMLElement>('.macro-panel');
-		if (!macroPanel) return;
-		macroDragState.current = { startY: e.clientY, startHeight: macroPanel.getBoundingClientRect().height };
-		e.currentTarget.setPointerCapture(e.pointerId);
-	}
-
-	function handleMacroResizeMove(e: React.PointerEvent<HTMLDivElement>) {
-		const drag = macroDragState.current;
-		const editorPane = e.currentTarget.closest<HTMLElement>('.editor-pane');
-		if (!drag || !editorPane) return;
-		const delta = drag.startY - e.clientY;
-		const paneHeight = editorPane.getBoundingClientRect().height;
-		const min = 60;
-		const max = paneHeight - 120;
-		const next = Math.max(min, Math.min(max, drag.startHeight + delta));
-		setMacroHeight(next);
-	}
-
-	function handleMacroResizeEnd() {
-		macroDragState.current = null;
 	}
 
 	if (phase === 'loading') {

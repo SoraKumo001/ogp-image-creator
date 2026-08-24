@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { errorMessage } from '../../shared/errors';
 import { requireAuth } from '../middleware';
 import type { AppEnv } from '../types';
 
@@ -28,6 +29,6 @@ proxyRoutes.get('/api/proxy', requireAuth, async (c) => {
 			headers,
 		});
 	} catch (e) {
-		return c.json({ error: `proxy fetch failed: ${e instanceof Error ? e.message : String(e)}` }, 502);
+		return c.json({ error: `proxy fetch failed: ${errorMessage(e)}` }, 502);
 	}
 });

@@ -1,11 +1,10 @@
 import { Hono } from 'hono';
 import { applyMacros } from '../../shared/macros';
+import { DEFAULT_WIDTH, DEFAULT_HEIGHT } from '../../shared/constants';
+import { errorMessage } from '../../shared/errors';
 import { isNonEmptyString } from '../validate';
 import { renderImage, parseFormat, renderCacheKey, hashString } from '../render';
 import type { AppEnv, RenderFormat } from '../types';
-
-const DEFAULT_WIDTH = 1200;
-const DEFAULT_HEIGHT = 630;
 
 export const renderRoutes = new Hono<AppEnv>();
 
@@ -40,6 +39,6 @@ renderRoutes.post('/api/render', async (c) => {
 		await caches.default.put(cacheKey, response.clone());
 		return response;
 	} catch (e) {
-		return c.json({ error: `render failed: ${e instanceof Error ? e.message : String(e)}` }, 500);
+		return c.json({ error: `render failed: ${errorMessage(e)}` }, 500);
 	}
 });

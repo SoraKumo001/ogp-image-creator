@@ -1,9 +1,9 @@
-export type OutputFormat = 'png' | 'webp' | 'svg';
+import type { RenderFormat } from '../../shared/types';
 
 export interface RenderSettings {
 	width: number;
 	height: number;
-	format: OutputFormat;
+	format: RenderFormat;
 }
 
 export interface TemplateSummary {

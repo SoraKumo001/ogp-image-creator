@@ -4,6 +4,8 @@
  * ドメイン操作のみを呼び出すようにする。
  */
 
+import { DEFAULT_WIDTH, DEFAULT_HEIGHT } from '../shared/constants';
+
 export interface TemplateData {
 	html: string;
 	width?: number;
@@ -27,11 +29,12 @@ export interface TemplateDetail extends TemplateSummary {
 	height: number;
 }
 
-const DEFAULT_WIDTH = 1200;
-const DEFAULT_HEIGHT = 630;
+export function kv(env: Env): KVNamespace {
+	return env['OGP-IMAGE-CREATOR'];
+}
 
 export async function getTemplate(env: Env, id: string): Promise<TemplateData | null> {
-	const raw = await env['OGP-IMAGE-CREATOR'].get(id);
+	const raw = await kv(env).get(id);
 	if (raw == null) return null;
 	try {
 		return JSON.parse(raw) as TemplateData;
@@ -41,20 +44,20 @@ export async function getTemplate(env: Env, id: string): Promise<TemplateData | 
 }
 
 export async function getTemplateMetadata(env: Env, id: string): Promise<Partial<TemplateMetadata>> {
-	const entry = await env['OGP-IMAGE-CREATOR'].getWithMetadata(id);
+	const entry = await kv(env).getWithMetadata(id);
 	return (entry.metadata ?? {}) as Partial<TemplateMetadata>;
 }
 
 export async function putTemplate(env: Env, id: string, data: TemplateData, metadata: TemplateMetadata): Promise<void> {
-	await env['OGP-IMAGE-CREATOR'].put(id, JSON.stringify(data), { metadata });
+	await kv(env).put(id, JSON.stringify(data), { metadata });
 }
 
 export async function deleteTemplate(env: Env, id: string): Promise<void> {
-	await env['OGP-IMAGE-CREATOR'].delete(id);
+	await kv(env).delete(id);
 }
 
 export async function listTemplates(env: Env): Promise<TemplateSummary[]> {
-	const list = await env['OGP-IMAGE-CREATOR'].list();
+	const list = await kv(env).list();
 	return list.keys
 		.filter((key) => !key.name.startsWith('__'))
 		.map((key) => {

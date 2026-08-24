@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { applyMacros } from '../../shared/macros';
+import { errorMessage } from '../../shared/errors';
 import { getTemplate, getTemplateMetadata, resolveTemplateSize } from '../kv';
 import { renderImage, parseFormat, parsePositiveInt, renderCacheKey } from '../render';
 import type { AppEnv } from '../types';
@@ -43,6 +44,6 @@ ogpRoutes.get('/ogp/:id', async (c) => {
 		await caches.default.put(cacheKey, response.clone());
 		return response;
 	} catch (e) {
-		return c.json({ error: `render failed: ${e instanceof Error ? e.message : String(e)}` }, 500);
+		return c.json({ error: `render failed: ${errorMessage(e)}` }, 500);
 	}
 });
