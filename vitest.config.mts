@@ -5,11 +5,12 @@ export default defineConfig({
 	plugins: [
 		cloudflareTest({
 			wrangler: { configPath: './wrangler.jsonc' },
+			// wrangler.jsonc では `ai` バインディングが `remote: true` のため、
+			// デフォルト（remoteBindings: true）だとリモートプロキシセッションの
+			// 確立に CLOUDFLARE_API_TOKEN が必要になる。テストでは AI をモックするため、
+			// リモートバインディングの解決を無効化してトークン不要にする。
+			remoteBindings: false,
 			miniflare: {
-				// wrangler.jsonc では `ai` バインディングが `remote: true` のため、
-				// CI などの非対話環境ではリモートプロキシセッションの確立に
-				// CLOUDFLARE_API_TOKEN が必要になる。テストでは AI をモックするため、
-				// ローカルバインディングに上書きしてリモート接続を不要にする。
 				ai: { binding: 'AI' },
 			},
 		}),
