@@ -2,9 +2,10 @@ interface ToolbarProps {
 	onOpenSamples: () => void;
 	onOpenAdmin: () => void;
 	onOpenApiDocs: () => void;
+	onOpenGenerate: () => void;
 }
 
-export function Toolbar({ onOpenSamples, onOpenAdmin, onOpenApiDocs }: ToolbarProps) {
+export function Toolbar({ onOpenSamples, onOpenAdmin, onOpenApiDocs, onOpenGenerate }: ToolbarProps) {
 	return (
 		<header className="toolbar">
 			<div className="toolbar-brand">
@@ -16,6 +17,15 @@ export function Toolbar({ onOpenSamples, onOpenAdmin, onOpenApiDocs }: ToolbarPr
 
 			<div className="toolbar-controls">
 				<div className="control-group actions">
+					<button type="button" className="btn primary generate-toolbar-btn" onClick={onOpenGenerate}>
+						<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+							<path
+								fill="currentColor"
+								d="M12 2l1.8 5.6L19.5 9l-5.7 1.4L12 16l-1.8-5.6L4.5 9l5.7-1.4L12 2Zm6 12l.9 2.8L22 18l-3.1.9L18 22l-.9-3.1L14 18l3.1-.9L18 14Z"
+							/>
+						</svg>
+						<span className="btn-label">AI 生成</span>
+					</button>
 					<button type="button" className="btn ghost" onClick={onOpenApiDocs}>
 						<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
 							<path

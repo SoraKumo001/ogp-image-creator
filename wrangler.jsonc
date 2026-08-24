@@ -17,6 +17,12 @@
 	 */
 	"assets": { "directory": "./public/", "binding": "ASSETS" },
 	/**
+	 * Workers AI
+	 * https://developers.cloudflare.com/workers-ai/
+	 * Workers AI バインディング（テキスト生成ストリーミングに使用）
+	 */
+	"ai": { "binding": "AI", "remote": true },
+	/**
 	 * KV Namespaces
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#kv-namespaces
 	 *

@@ -10,6 +10,7 @@ import { SaveDialog } from './components/SaveDialog';
 import { MacroPanel } from './components/MacroPanel';
 import { AdminPanel } from './components/AdminPanel';
 import { ApiDocsPanel } from './components/ApiDocsPanel';
+import { GeneratePanel } from './components/GeneratePanel';
 import { SetupScreen } from './components/SetupScreen';
 import { LoginScreen } from './components/LoginScreen';
 import { ToastContainer, type Toast } from './components/Toast';
@@ -45,6 +46,7 @@ function App() {
 	const [saveOpen, setSaveOpen] = useState(false);
 	const [adminOpen, setAdminOpen] = useState(false);
 	const [apiDocsOpen, setApiDocsOpen] = useState(false);
+	const [generateOpen, setGenerateOpen] = useState(false);
 	const [toast, setToast] = useState<Toast | null>(null);
 	const [editorWidth, setEditorWidth] = useState<number | null>(null);
 	const [macroHeight, setMacroHeight] = useState<number | null>(null);
@@ -77,6 +79,7 @@ function App() {
 			setSaveOpen(false);
 			setAdminOpen(false);
 			setApiDocsOpen(false);
+			setGenerateOpen(false);
 		}
 	}, [phase]);
 
@@ -195,6 +198,15 @@ function App() {
 		setSamplesOpen(false);
 		markClean();
 		notify(`サンプル「${sample.name}」を読み込みました`);
+	}
+
+	// AI 生成で得た HTML をエディタに挿入する
+	function handleInsertGenerated(html: string) {
+		setHtml(html);
+		setDirty(true);
+		setCurrentId(null);
+		setSlug('');
+		setTemplateName('AI生成テンプレート');
 	}
 
 	// ヘッダからテンプレート名をリネームする
@@ -329,6 +341,7 @@ function App() {
 				onOpenSamples={() => setSamplesOpen(true)}
 				onOpenAdmin={() => setAdminOpen(true)}
 				onOpenApiDocs={() => setApiDocsOpen(true)}
+				onOpenGenerate={() => setGenerateOpen(true)}
 			/>
 
 			<div className="share-bar">
@@ -441,6 +454,12 @@ function App() {
 			<SamplePanel open={samplesOpen} onClose={() => setSamplesOpen(false)} onSelect={handleSelectSample} />
 			<AdminPanel open={adminOpen} onClose={() => setAdminOpen(false)} onLogout={logout} />
 			<ApiDocsPanel open={apiDocsOpen} onClose={() => setApiDocsOpen(false)} currentTemplateId={currentId} />
+			<GeneratePanel
+				open={generateOpen}
+				onClose={() => setGenerateOpen(false)}
+				onInsert={handleInsertGenerated}
+				notify={notify}
+			/>
 			<SaveDialog open={saveOpen} defaultName={templateName} onCancel={() => setSaveOpen(false)} onConfirm={confirmSave} />
 			<ToastContainer toast={toast} onDismiss={() => setToast(null)} />
 		</div>
