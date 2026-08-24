@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { applyMacros } from '../../shared/macros';
+import { MAX_PARAM_COUNT } from '../../shared/constants';
 import { errorMessage } from '../../shared/errors';
 import { getTemplate, getTemplateMetadata, resolveTemplateSize } from '../kv';
 import { renderImage, parseFormat, parsePositiveInt, renderCacheKey } from '../render';
@@ -25,6 +26,7 @@ ogpRoutes.get('/ogp/:id', async (c) => {
 		const params: Record<string, string> = {};
 		for (const [key, value] of Object.entries(allQuery)) {
 			if (key === 'w' || key === 'h' || key === 'format') continue;
+			if (Object.keys(params).length >= MAX_PARAM_COUNT) break;
 			params[key] = value;
 		}
 		const html = applyMacros(template.html, params);

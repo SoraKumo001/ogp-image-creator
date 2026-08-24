@@ -2,6 +2,8 @@ import { SELF } from 'cloudflare:test';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { applyMacros } from '../src/index';
 import { hashPassword, verifyPassword } from '../src/auth';
+import { parsePositiveInt, clampDimension } from '../src/render';
+import { MAX_DIMENSION } from '../shared/constants';
 import { IncomingRequest, clearKv, fetchWorker, setupAdmin } from './helpers';
 
 // satoru-render の render をモックし、渡された HTML（マクロ置換後）をそのまま返す。
@@ -301,7 +303,30 @@ describe('applyMacros', () => {
 		).toBe('<h1>Hello</h1><p>World</p>');
 	});
 
-	it('does not HTML-escape values', () => {
-		expect(applyMacros('<div>{{content}}</div>', { content: '<b>x</b>' })).toBe('<div><b>x</b></div>');
+	it('HTML-escapes values', () => {
+		expect(applyMacros('<div>{{content}}</div>', { content: '<b>x</b>' })).toBe('<div>&lt;b&gt;x&lt;/b&gt;</div>');
+	});
+
+	it('escapes &, ", and \' in values', () => {
+		expect(applyMacros('<div>{{content}}</div>', { content: '&"\'<>' })).toBe(
+			'<div>&amp;&quot;&#39;&lt;&gt;</div>',
+		);
+	});
+});
+
+describe('dimension clamping', () => {
+	it('parsePositiveInt clamps values above MAX_DIMENSION', () => {
+		expect(parsePositiveInt('99999', 1200)).toBe(MAX_DIMENSION);
+		expect(parsePositiveInt('4096', 1200)).toBe(4096);
+		expect(parsePositiveInt('100', 1200)).toBe(100);
+	});
+
+	it('clampDimension returns fallback for non-number/negative and clamps large numbers', () => {
+		expect(clampDimension('abc', 1200)).toBe(1200);
+		expect(clampDimension(-5, 1200)).toBe(1200);
+		expect(clampDimension(0, 1200)).toBe(1200);
+		expect(clampDimension(1.5, 1200)).toBe(1200);
+		expect(clampDimension(99999, 1200)).toBe(MAX_DIMENSION);
+		expect(clampDimension(100, 1200)).toBe(100);
 	});
 });

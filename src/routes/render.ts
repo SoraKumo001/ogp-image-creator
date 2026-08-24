@@ -1,9 +1,9 @@
 import { Hono } from 'hono';
 import { applyMacros } from '../../shared/macros';
-import { DEFAULT_WIDTH, DEFAULT_HEIGHT } from '../../shared/constants';
+import { DEFAULT_WIDTH, DEFAULT_HEIGHT, MAX_PARAM_COUNT } from '../../shared/constants';
 import { errorMessage } from '../../shared/errors';
 import { isNonEmptyString } from '../validate';
-import { renderImage, parseFormat, renderCacheKey, hashString } from '../render';
+import { renderImage, parseFormat, renderCacheKey, hashString, clampDimension } from '../render';
 import type { AppEnv, RenderFormat } from '../types';
 
 export const renderRoutes = new Hono<AppEnv>();
@@ -22,9 +22,10 @@ renderRoutes.post('/api/render', async (c) => {
 			return c.json({ error: 'html is required' }, 400);
 		}
 		const format = parseFormat(body.format);
-		const width = body.width ?? DEFAULT_WIDTH;
-		const height = body.height ?? DEFAULT_HEIGHT;
-		const html = applyMacros(body.html, body.params ?? {});
+		const width = clampDimension(body.width, DEFAULT_WIDTH);
+		const height = clampDimension(body.height, DEFAULT_HEIGHT);
+		const params = Object.fromEntries(Object.entries(body.params ?? {}).slice(0, MAX_PARAM_COUNT));
+		const html = applyMacros(body.html, params);
 
 		// 同一入力（HTML + パラメータ + サイズ + 形式）のレンダリング結果をキャッシュする。
 		const cacheKey = renderCacheKey(['render', await hashString(html)], {

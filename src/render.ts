@@ -1,6 +1,7 @@
 import type { Context } from 'hono';
 import { render } from 'satoru-render';
 import { createCSS } from 'satoru-render/tailwind';
+import { MAX_DIMENSION } from '../shared/constants';
 import { getAsset, decodeBase64 } from './assets';
 import type { RenderFormat } from './types';
 
@@ -19,7 +20,14 @@ export function parsePositiveInt(value: string | null | undefined, fallback: num
 	if (value == null) return fallback;
 	const n = Number.parseInt(value, 10);
 	if (Number.isNaN(n) || n <= 0) return fallback;
-	return n;
+	return Math.min(n, MAX_DIMENSION);
+}
+
+export function clampDimension(value: unknown, fallback: number): number {
+	if (typeof value === 'number' && Number.isInteger(value) && value > 0) {
+		return Math.min(value, MAX_DIMENSION);
+	}
+	return fallback;
 }
 
 export async function renderImage(c: Context, html: string, width: number, height: number, format: RenderFormat): Promise<Response> {
